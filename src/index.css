@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TNS Control Tower design tokens applied to PCP Honda Simulador */
+@layer base {
+  :root {
+    /* Neutros */
+    --background: 220 14% 96%;       /* levemente mais frio que cinza puro — separa melhor os cards */
+    --foreground: 0 0% 10%;            /* #1A1A1A texto primário */
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    /* Primária TNS Orange */
+    --primary: 14 100% 51%;            /* #FF3D03 */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 14 100% 44%;       /* #E03500 */
+    --primary-active: 14 100% 38%;     /* #C42F00 */
+
+    --secondary: 220 14% 96%;          /* #F9FAFB */
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 220 9% 46%;    /* #6B7280 */
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 0 0% 10%;
+
+    /* Semânticos */
+    --destructive: 0 74% 50%;          /* #DC2626 crítica/atrasado */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-bg: 0 86% 97%;       /* #FEF2F2 */
+
+    --warning: 38 92% 50%;             /* #F59E0B atenção/alta */
+    --warning-foreground: 30 50% 15%;
+    --warning-bg: 48 100% 96%;         /* #FFFBEB */
+
+    --success: 142 71% 38%;            /* #16A34A */
+    --success-foreground: 0 0% 100%;
+    --success-bg: 138 76% 97%;         /* #F0FDF4 */
+
+    --info: 217 91% 56%;               /* #2563EB */
+    --info-bg: 214 100% 97%;           /* #EFF6FF */
+
+    --industrial: 220 9% 35%;          /* cinza chumbo p/ consolidados */
+    --industrial-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;             /* #E5E7EB */
+    --input: 220 13% 91%;
+    --ring: 14 100% 51%;
+
+    /* Radius TNS */
+    --radius: 0.5rem;                  /* 8px botões/inputs */
+    --radius-card: 0.75rem;            /* 12px cards */
+    --radius-chip: 0.25rem;            /* 4px badges */
+
+    /* Sidebar — versão clara, mantendo identidade do app */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 14 100% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 14 100% 51%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 14 100% 51%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(14 100% 51%), hsl(14 100% 44%));
+    --gradient-industrial: linear-gradient(135deg, hsl(220 9% 35%), hsl(220 9% 25%));
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-elevated: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-hover: 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.05);
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Open Sans', system-ui, sans-serif;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Barlow', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .status-dot { @apply inline-block h-2 w-2 rounded-full; }
+  .kpi-card { @apply bg-card rounded-xl border p-4 shadow-[var(--shadow-card)]; }
+  .font-display { font-family: 'Barlow', system-ui, sans-serif; }
+}
