@@ -36,15 +36,20 @@ function ReportShell({ titulo, subtitulo, periodo }: Props) {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-8 p-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Simulador PCP · Relatórios</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{titulo}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            {subtitulo} · valores projetados a partir das hipóteses de simulação
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Simulador PCP · Relatórios</p>
+              <span className="hidden h-1 w-1 rounded-full bg-border sm:inline-block" aria-hidden />
+              <p className="text-[11px] font-medium text-muted-foreground">{periodo}</p>
+            </div>
+            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{titulo}</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              {subtitulo} · valores projetados a partir das hipóteses de simulação
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
           <Button
             variant="outline"
             size="sm"
@@ -63,7 +68,9 @@ function ReportShell({ titulo, subtitulo, periodo }: Props) {
             <Download className="h-4 w-4 mr-2" />
             {exporting === "excel" ? "Gerando…" : "Excel"}
           </Button>
+          </div>
         </div>
+        <div className="mt-4 h-1.5 w-16 rounded-full bg-primary" aria-hidden />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

@@ -119,13 +119,15 @@ export function SimulationShell({
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-start gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-primary">
-                  Simulador PCP · Cenário {tipo}
-                  <span className="font-normal text-muted-foreground">
-                    {" "}
-                    · etapa {etapaFluxo} de 3 do fluxo encadeado
-                  </span>
-                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                    Simulador PCP · Cenário {tipo}
+                  </p>
+                  <span className="hidden h-1 w-1 rounded-full bg-border sm:inline-block" aria-hidden />
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    etapa {etapaFluxo} de 3 do fluxo encadeado
+                  </p>
+                </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-3">
                   <Input
                     value={nome}
@@ -135,6 +137,7 @@ export function SimulationShell({
                   <span className={`shrink-0 text-[10px] font-medium px-2.5 py-1 rounded-full ${statusColor(status)}`}>{status}</span>
                 </div>
                 <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
+                <div className="mt-4 h-1.5 w-16 rounded-full bg-primary" aria-hidden />
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">{filters}</div>
             </div>
