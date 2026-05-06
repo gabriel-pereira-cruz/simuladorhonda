@@ -103,7 +103,7 @@ export function CrudPage({ title, subtitle, columns, initialRows, withProgress }
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-8 p-6">
-      <div className="rounded-xl border-l-4 border-l-primary/50 bg-primary/[0.04] px-4 py-3">
+      <div className="rounded-xl border border-border/70 bg-card px-4 py-3 shadow-sm">
         <p className="text-sm font-medium text-foreground">Cadastros do simulador</p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           Estes parâmetros alimentam a simulação. Não representam estoque, ordem de compra ou operação em tempo real.

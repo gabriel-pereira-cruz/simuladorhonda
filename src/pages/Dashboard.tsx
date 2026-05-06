@@ -176,7 +176,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="mt-4 h-1.5 w-16 rounded-full bg-primary" aria-hidden />
           </div>
         </div>
       </div>

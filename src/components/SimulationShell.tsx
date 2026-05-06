@@ -137,7 +137,6 @@ export function SimulationShell({
                   <span className={`shrink-0 text-[10px] font-medium px-2.5 py-1 rounded-full ${statusColor(status)}`}>{status}</span>
                 </div>
                 <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
-                <div className="mt-4 h-1.5 w-16 rounded-full bg-primary" aria-hidden />
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">{filters}</div>
             </div>
@@ -166,6 +165,7 @@ export function SimulationShell({
                 variant="outline"
                 size="sm"
                 disabled={pending !== null}
+                type="button"
                 onClick={() => {
                   setPending("dup");
                   runMockAction("Cenário duplicado.", () => setPending(null));
@@ -179,7 +179,9 @@ export function SimulationShell({
                 size="sm"
                 disabled={pending !== null || isAlreadyPlanned}
                 title="Define este cenário como base para a próxima etapa do planejamento"
+                type="button"
                 onClick={() => {
+                  setPlanResult(null);
                   setConfirmPlanOpen(true);
                 }}
               >
@@ -190,6 +192,7 @@ export function SimulationShell({
                 size="sm"
                 className="bg-primary hover:bg-primary/90"
                 disabled={pending !== null}
+                type="button"
                 onClick={() => {
                   const label = nome.trim() || `Simulação ${tipo}`;
                   setPending("save");
@@ -372,6 +375,7 @@ export function SimulationShell({
             <AlertDialogCancel disabled={pending !== null}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               disabled={pending !== null}
+              type="button"
               onClick={() => {
                 setPending("plan");
                 const res = planScenarioBase({
@@ -421,6 +425,7 @@ export function SimulationShell({
           <AlertDialogFooter>
             <AlertDialogCancel>Continuar aqui</AlertDialogCancel>
             <AlertDialogAction
+              type="button"
               onClick={() => {
                 const nextTipo = tipo === "Anual" ? ("Mensal" as const) : ("Diária" as const);
                 const path = pathForSimulacaoTipo(nextTipo);

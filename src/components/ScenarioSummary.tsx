@@ -51,14 +51,9 @@ export function ScenarioSummary({
 
   return (
     <section id="resumo" aria-label="Resumo executivo" className="mb-0 scroll-mt-24">
-      <div className="mb-5 flex items-center gap-3" aria-hidden>
-        <div className="h-1.5 w-16 shrink-0 rounded-full bg-primary" />
-      </div>
-
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5">
         <Card className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-sm transition-shadow duration-200 hover:shadow-md lg:col-span-5">
-          <div className="absolute inset-y-4 left-0 w-1 rounded-full bg-primary" aria-hidden />
-          <div className="pl-4">
+          <div>
             <div className="flex items-start justify-between gap-3">
               <p className="text-xs font-medium text-muted-foreground">{aderenciaLabel}</p>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
@@ -92,8 +87,7 @@ export function ScenarioSummary({
         </Card>
 
         <Card className="relative rounded-2xl border border-warning/35 bg-amber-50 p-6 shadow-sm dark:bg-amber-950/25 dark:border-warning/40 transition-shadow duration-200 hover:shadow-md lg:col-span-4">
-          <div className="absolute inset-y-4 left-0 w-0.5 rounded-full bg-warning" aria-hidden />
-          <div className="pl-3">
+          <div>
             <div className="flex items-start justify-between gap-2">
               <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">Restrição principal</p>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/25 text-amber-800 dark:text-amber-100">
@@ -130,13 +124,7 @@ export function ScenarioSummary({
                   : "border-border/70 bg-card hover:border-primary/25"
               }`}
             >
-              <div
-                className={`absolute inset-y-4 left-0 w-1 rounded-full ${
-                  k.tone === "danger" ? "bg-destructive/70" : "bg-primary/70"
-                }`}
-                aria-hidden
-              />
-              <div className="pl-3">
+              <div>
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-[11px] font-semibold tracking-wide text-muted-foreground">{k.label}</p>
                   <div
@@ -211,7 +199,6 @@ export function SectionHeader({
       <div className="min-w-0">
         {eyebrow && (
           <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-5 shrink-0 rounded-full bg-primary" aria-hidden />
             <p className="text-xs font-medium text-primary">{eyebrow}</p>
           </div>
         )}

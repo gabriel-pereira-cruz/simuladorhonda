@@ -70,7 +70,6 @@ function ReportShell({ titulo, subtitulo, periodo }: Props) {
           </Button>
           </div>
         </div>
-        <div className="mt-4 h-1.5 w-16 rounded-full bg-primary" aria-hidden />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

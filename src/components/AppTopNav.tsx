@@ -93,7 +93,7 @@ function NavDropdown({
                   "flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm outline-none transition-colors",
                   "text-zinc-200 hover:bg-zinc-800 hover:text-white",
                   isActive &&
-                    "relative bg-zinc-800/90 font-medium text-orange-400 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-orange-500",
+                    "bg-zinc-800/90 font-medium text-orange-400",
                 )}
               >
                 <item.icon
