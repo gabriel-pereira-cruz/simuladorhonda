@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, Target, FlaskConical } from "lucide-react";
+import { AlertTriangle, Target, FlaskConical, Layers, Factory, Boxes } from "lucide-react";
 import { ProgressBar } from "@/components/StatusBadge";
 import { semaforo } from "@/lib/mockData";
 
@@ -33,6 +33,22 @@ export function ScenarioSummary({
   secundarios = [],
 }: Props) {
   const s = semaforo(aderencia);
+
+  const secondaryIconFor = (label: string) => {
+    const l = label.toLowerCase();
+    if (l.includes("cenár")) return Layers;
+    if (l.includes("produ")) return Factory;
+    if (l.includes("famíl")) return Boxes;
+    return Target;
+  };
+
+  const hintToChips = (hint?: string) =>
+    (hint ?? "")
+      .split("·")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 4);
+
   return (
     <section id="resumo" aria-label="Resumo executivo" className="mb-0 scroll-mt-24">
       <div className="mb-5 flex items-center gap-3" aria-hidden>
@@ -104,21 +120,64 @@ export function ScenarioSummary({
           </div>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3 lg:col-span-3 lg:grid-cols-1 lg:gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1 lg:gap-3">
           {secundarios.slice(0, 3).map((k) => (
             <div
               key={k.label}
-              className="rounded-xl border border-border/60 bg-muted/30 px-4 py-3.5 transition-colors duration-200 hover:bg-muted/45"
+              className={`group relative overflow-hidden rounded-2xl border px-4 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                k.tone === "danger"
+                  ? "border-destructive/25 bg-destructive/5 hover:border-destructive/35"
+                  : "border-border/70 bg-card hover:border-primary/25"
+              }`}
             >
-              <p className="text-[11px] font-medium text-muted-foreground">{k.label}</p>
-              <p
-                className={`mt-1 font-display text-2xl font-semibold tabular-nums leading-none tracking-tight ${
-                  k.tone === "danger" ? "text-destructive" : "text-foreground"
+              <div
+                className={`absolute inset-y-4 left-0 w-1 rounded-full ${
+                  k.tone === "danger" ? "bg-destructive/70" : "bg-primary/70"
                 }`}
-              >
-                {k.value}
-              </p>
-              {k.hint && <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">{k.hint}</p>}
+                aria-hidden
+              />
+              <div className="pl-3">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[11px] font-semibold tracking-wide text-muted-foreground">{k.label}</p>
+                  <div
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
+                      k.tone === "danger"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/12 text-primary group-hover:bg-primary/18"
+                    }`}
+                  >
+                    {(() => {
+                      const Icon = secondaryIconFor(k.label);
+                      return <Icon className="h-4 w-4" aria-hidden />;
+                    })()}
+                  </div>
+                </div>
+
+                <p
+                  className={`mt-3 font-display text-3xl font-semibold tabular-nums leading-none tracking-tight ${
+                    k.tone === "danger" ? "text-destructive" : "text-foreground"
+                  }`}
+                >
+                  {k.value}
+                </p>
+
+                {k.hint ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {hintToChips(k.hint).map((chip) => (
+                      <span
+                        key={chip}
+                        className={`rounded-full px-2 py-1 text-[10px] font-medium leading-none ${
+                          k.tone === "danger"
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-muted/55 text-muted-foreground"
+                        }`}
+                      >
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
           ))}
         </div>
