@@ -5,7 +5,7 @@ export function RacksPage() {
   return (
     <CrudPage
       title="Racks"
-      subtitle="Parametrização de racks utilizados nos cálculos de disponibilidade do simulador"
+      subtitle="Parâmetros de racks usados no cálculo de disponibilidade."
       columns={["Código", "Descrição", "Família", "Quantidade total", "Disponibilidade Projetada", "Lead Time", "Condição no Cenário"]}
       initialRows={racks.map((r) => [
         r.codigo, r.descricao, r.familia, r.quantidade, r.disponivel, `${r.leadTime} dias`,
@@ -20,7 +20,7 @@ export function BensGiroPage() {
   return (
     <CrudPage
       title="Bens de Giro"
-      subtitle="Bens de giro associados às famílias de rack — impacto derivado da projeção racks × modelos × mix de produção"
+      subtitle="Parâmetros de bens de giro por família de rack (impacto projetado no cenário)."
       columns={["Código", "Descrição", "Família vinculada", "Estoque Simulado", "Mínimo paramétrico", "Giro/Mês (hipótese)", "Condição no Cenário"]}
       initialRows={[
         ["BG-001", "Pallets PBR", "F-CHASSI", 1240, 800, 4, 92],
@@ -39,7 +39,7 @@ export function ModelosPage() {
   return (
     <CrudPage
       title="Modelos de Motocicleta"
-      subtitle="Modelos considerados nas hipóteses de mix do simulador"
+      subtitle="Modelos usados nas hipóteses de mix do cenário."
       columns={["Modelo", "Família", "Cilindrada", "Linha", "Status no cenário", "Mix Plano (%)"]}
       initialRows={modelos.map((m, i) => [
         m,
@@ -58,7 +58,7 @@ export function FamiliasPage() {
   return (
     <CrudPage
       title="Família de Rack"
-      subtitle="Agrupamento funcional usado para identificar a restrição principal de cada cenário"
+      subtitle="Agrupamento funcional usado para identificar a restrição principal do cenário."
       columns={["Código", "Descrição", "Qtd. Racks", "Modelos vinculados", "Cobertura projetada"]}
       initialRows={familiasRack.map((f, i) => [
         f, ["Chassi", "Motor", "Roda", "Tanque", "Plásticos"][i],
@@ -73,7 +73,7 @@ export function LeadTimePage() {
   return (
     <CrudPage
       title="Lead Time"
-      subtitle="Tempos de reposição parametrizados — variável-chave da hipótese de cada simulação"
+      subtitle="Tempos de reposição por família (variável-chave da hipótese do cenário)."
       columns={["Família", "Fornecedor", "Lead Time (dias)", "Variação", "Última atualização do parâmetro", "Confiabilidade da hipótese"]}
       initialRows={familiasRack.map((f, i) => [
         f, `Fornecedor ${["Alpha", "Beta", "Gama", "Delta", "Omega"][i]}`,

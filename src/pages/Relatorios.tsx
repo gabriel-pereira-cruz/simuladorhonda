@@ -46,7 +46,7 @@ function ReportShell({ titulo, subtitulo, periodo }: Props) {
             </div>
             <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{titulo}</h1>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              {subtitulo} · valores projetados a partir das hipóteses de simulação
+              {subtitulo}. Dados simulados a partir das hipóteses do cenário.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">

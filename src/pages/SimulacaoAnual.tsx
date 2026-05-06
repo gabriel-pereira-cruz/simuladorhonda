@@ -52,7 +52,7 @@ export default function SimulacaoAnual() {
     <SimulationShell
       tipo="Anual"
       title="Cenário anual · A quantidade de racks atende ao plano de 12 meses?"
-      subtitle={`Projeção Ano Ki ${ano} · valores simulados, não operacionais`}
+      subtitle={`Ano Ki ${ano} · visão consolidada de 12 meses (dados simulados)`}
       defaultName={`Plano Anual Ki${ano.slice(2)} v4`}
       atendimentoPreview={mediaAtendimento}
       filters={

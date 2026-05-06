@@ -35,7 +35,7 @@ export default function SimulacaoMensal() {
     <SimulationShell
       tipo="Mensal"
       title={`Cenário mensal · ${meses[+mes]}/2026 · Em quais dias existe risco de falta?`}
-      subtitle="Projeção diária — ajustes manuais versionados, sem dados operacionais em tempo real"
+      subtitle="Detalhamento diário do mês · ajustes recalculam a aderência (dados simulados)"
       defaultName={`${meses[+mes]}/26 Operacional v2`}
       atendimentoPreview={media}
       filters={

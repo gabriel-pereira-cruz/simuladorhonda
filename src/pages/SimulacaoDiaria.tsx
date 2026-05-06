@@ -34,7 +34,7 @@ export default function SimulacaoDiaria() {
     <SimulationShell
       tipo="Diária"
       title={`Cenário diário · ${dia.padStart(2, "0")}/${(+mes + 1).toString().padStart(2, "0")}/2026 · Em qual hora a restrição pode parar a produção?`}
-      subtitle="Projeção hora a hora — não representa execução em tempo real do chão de fábrica"
+      subtitle="Detalhamento por hora · identifica janelas de risco (dados simulados)"
       defaultName={`${dia.padStart(2, "0")}/${(+mes + 1).toString().padStart(2, "0")} Turno A+B v1`}
       atendimentoPreview={media}
       filters={

@@ -121,11 +121,11 @@ export function SimulationShell({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-                    Simulador PCP · Cenário {tipo}
+                    PCP Honda · Simulação {tipo}
                   </p>
                   <span className="hidden h-1 w-1 rounded-full bg-border sm:inline-block" aria-hidden />
                   <p className="text-[11px] font-medium text-muted-foreground">
-                    etapa {etapaFluxo} de 3 do fluxo encadeado
+                    etapa {etapaFluxo} de 3 · fluxo Anual → Mensal → Diária
                   </p>
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-3">
@@ -158,7 +158,7 @@ export function SimulationShell({
             <div className="text-xs text-muted-foreground flex min-w-0 items-center gap-2">
               <Settings2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
               <span className="truncate">
-                Valores são projeções da simulação · ajustes recalculam o cenário ao salvar
+                Projeções do cenário atual · ajustes recalculam a simulação ao salvar
               </span>
             </div>
             <div className="flex shrink-0 gap-2">
