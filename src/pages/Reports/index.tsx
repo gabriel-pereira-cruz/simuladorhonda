@@ -7,6 +7,9 @@ import { meses, semaforo, computeConsolidatedMonthlyTotals, modelos } from "@/co
 import { ProgressBar } from "@/components/common/StatusBadge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 interface Props {
   titulo: string;
@@ -24,12 +27,92 @@ function ReportShell({ titulo, subtitulo, periodo, labels, totals }: Props) {
   const handleExport = (format: "pdf" | "excel") => {
     setExporting(format);
     window.setTimeout(() => {
-      setExporting(null);
-      toast.success(
-        format === "pdf" ? "PDF gerado (simulação)." : "Planilha gerada (simulação).",
-        { description: "Em produção, o arquivo viria da API de exportação." },
-      );
-    }, 600);
+      try {
+        const rows = totals.map((t, i) => {
+          const gap = t.plano - t.atendido;
+          return {
+            periodo: labels[i] ?? String(i + 1),
+            plano: t.plano,
+            atendido: t.atendido,
+            gap,
+            aderencia: t.pct,
+          };
+        });
+
+        const safeBase = `${titulo} - ${periodo}`
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\w\s.-]/g, "")
+          .trim()
+          .replace(/\s+/g, "_")
+          .slice(0, 80);
+        const stamp = new Date().toISOString().slice(0, 10);
+
+        if (format === "excel") {
+          const sheetData: (string | number)[][] = [
+            ["Relatório", titulo],
+            ["Período", periodo],
+            ["Descrição", subtitulo],
+            [],
+            ["Período", "Plano de produção (motos)", "Atendido projetado (motos)", "Gap (motos não atendidas)", "% Aderência"],
+            ...rows.map((r) => [r.periodo, r.plano, r.atendido, r.gap, r.aderencia]),
+          ];
+          const ws = XLSX.utils.aoa_to_sheet(sheetData);
+          ws["!cols"] = [{ wch: 16 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 12 }];
+
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
+          XLSX.writeFile(wb, `${safeBase}_${stamp}.xlsx`);
+          toast.success("Excel exportado.");
+        } else {
+          const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+          doc.setFontSize(14);
+          doc.text(titulo, 40, 40);
+          doc.setFontSize(10);
+          doc.text(periodo, 40, 58);
+          doc.setTextColor(110);
+          doc.text(subtitulo, 40, 74, { maxWidth: 760 });
+          doc.setTextColor(0);
+
+          autoTable(doc, {
+            startY: 98,
+            head: [[
+              "Período",
+              "Plano (motos)",
+              "Atendido (motos)",
+              "Gap (motos)",
+              "% Aderência",
+            ]],
+            body: rows.map((r) => [
+              r.periodo,
+              r.plano.toLocaleString("pt-BR"),
+              r.atendido.toLocaleString("pt-BR"),
+              r.gap.toLocaleString("pt-BR"),
+              `${r.aderencia}%`,
+            ]),
+            styles: { fontSize: 9, cellPadding: 6 },
+            headStyles: { fillColor: [35, 35, 35] },
+            columnStyles: {
+              0: { cellWidth: 90 },
+              1: { halign: "right" },
+              2: { halign: "right" },
+              3: { halign: "right" },
+              4: { halign: "right" },
+            },
+          });
+
+          doc.save(`${safeBase}_${stamp}.pdf`);
+          toast.success("PDF exportado.");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Falha ao exportar.", {
+          description: err instanceof Error ? err.message : "Erro desconhecido",
+        });
+      } finally {
+        setExporting(null);
+      }
+    }, 50);
   };
 
   return (
