@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import html2canvas from "html2canvas";
+import ExcelJS from "exceljs";
 
 interface Props {
   titulo: string;
@@ -23,10 +24,12 @@ function ReportShell({ titulo, subtitulo, periodo, labels, totals }: Props) {
   const max = Math.max(...totals.map((t) => t.plano), 1);
   const [exporting, setExporting] = useState<null | "pdf" | "excel">(null);
   const { pathname } = useLocation();
+  const exportRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<HTMLDivElement | null>(null);
 
   const handleExport = (format: "pdf" | "excel") => {
     setExporting(format);
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       try {
         const rows = totals.map((t, i) => {
           const gap = t.plano - t.atendido;
@@ -49,22 +52,168 @@ function ReportShell({ titulo, subtitulo, periodo, labels, totals }: Props) {
         const stamp = new Date().toISOString().slice(0, 10);
 
         if (format === "excel") {
-          const sheetData: (string | number)[][] = [
-            ["Relatório", titulo],
-            ["Período", periodo],
-            ["Descrição", subtitulo],
-            [],
-            ["Período", "Plano de produção (motos)", "Atendido projetado (motos)", "Gap (motos não atendidas)", "% Aderência"],
-            ...rows.map((r) => [r.periodo, r.plano, r.atendido, r.gap, r.aderencia]),
-          ];
-          const ws = XLSX.utils.aoa_to_sheet(sheetData);
-          ws["!cols"] = [{ wch: 16 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 12 }];
+          const wb = new ExcelJS.Workbook();
+          wb.creator = "Simulador PCP";
+          wb.created = new Date();
 
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
-          XLSX.writeFile(wb, `${safeBase}_${stamp}.xlsx`);
+          const ws = wb.addWorksheet("Relatório", {
+            properties: { defaultRowHeight: 18 },
+            views: [{ state: "frozen", ySplit: 20 }],
+          });
+
+          // Layout: coluna A reservada para o logo; título/metadados em B–F.
+          ws.columns = [
+            { width: 14 }, // A (logo)
+            { width: 18 }, // B (Período)
+            { width: 26 }, // C (Plano)
+            { width: 26 }, // D (Atendido)
+            { width: 26 }, // E (Gap / %)
+            { width: 22 }, // F (Restrição)
+          ];
+
+          const titleRow = ws.addRow(["", titulo]);
+          ws.mergeCells(1, 2, 1, 6);
+          titleRow.height = 30;
+          titleRow.getCell(2).font = { name: "Calibri", size: 18, bold: true, color: { argb: "FF111827" } };
+          titleRow.getCell(2).alignment = { vertical: "middle", horizontal: "left" };
+
+          const subRow = ws.addRow(["", periodo]);
+          ws.mergeCells(2, 2, 2, 6);
+          subRow.height = 18;
+          subRow.getCell(2).font = { name: "Calibri", size: 11, bold: true, color: { argb: "FF6B7280" } };
+          subRow.getCell(2).alignment = { vertical: "middle", horizontal: "left" };
+
+          const descRow = ws.addRow(["", subtitulo]);
+          ws.mergeCells(3, 2, 3, 6);
+          descRow.height = 18;
+          descRow.getCell(2).font = { name: "Calibri", size: 11, color: { argb: "FF374151" } };
+          descRow.getCell(2).alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+
+          ws.addRow([""]); // linha 4
+          ws.getRow(4).height = 8;
+
+          // Logo + gráfico como imagem (se existirem)
+          async function tryAddLogo() {
+            try {
+              const res = await fetch("/logo-runtec.png");
+              if (!res.ok) return;
+              const buf = await res.arrayBuffer();
+              const imgId = wb.addImage({ buffer: buf, extension: "png" });
+              ws.addImage(imgId, {
+                // Em A1 (sem sobrepor o título em B–F)
+                tl: { col: 0.05, row: 0.15 },
+                ext: { width: 140, height: 38 },
+              });
+            } catch {
+              // ignore
+            }
+          }
+
+          async function tryAddChart() {
+            const el = chartRef.current;
+            if (!el) return;
+            // Captura apenas o gráfico visível (tela) para inserir no XLSX.
+            const canvas = await html2canvas(el, {
+              scale: Math.min(2, window.devicePixelRatio || 1),
+              backgroundColor: "#ffffff",
+              useCORS: true,
+              logging: false,
+            });
+            const dataUrl = canvas.toDataURL("image/png", 1.0);
+            const base64 = dataUrl.split(",")[1];
+            if (!base64) return;
+            const imgId = wb.addImage({ base64, extension: "png" });
+            ws.addImage(imgId, {
+              // Começa em A6 e reserva espaço suficiente
+              tl: { col: 0, row: 5 },
+              ext: { width: 900, height: 260 },
+            });
+          }
+
+          await tryAddLogo();
+          // Reserva visual para o gráfico (linhas 6–18)
+          for (let r = 5; r <= 18; r++) {
+            ws.getRow(r).height = 20;
+          }
+          await tryAddChart();
+
+          // Tabela
+          // Garante que o cabeçalho comece abaixo do gráfico (linha 20)
+          ws.getRow(19).height = 10;
+          const headerRowIndex = 20;
+
+          const header = ws.getRow(headerRowIndex);
+          header.values = [
+            "Período",
+            "Plano de produção (motos)",
+            "Atendido projetado (motos)",
+            "Gap (motos não atendidas)",
+            "% Aderência",
+            "Restrição associada",
+          ];
+          header.height = 22;
+          header.eachCell((c) => {
+            c.font = { bold: true, color: { argb: "FFFFFFFF" } };
+            c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF111827" } };
+            c.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+            c.border = {
+              top: { style: "thin", color: { argb: "FF374151" } },
+              left: { style: "thin", color: { argb: "FF374151" } },
+              bottom: { style: "thin", color: { argb: "FF374151" } },
+              right: { style: "thin", color: { argb: "FF374151" } },
+            };
+          });
+
+          const restricoes = ["F-PLAST / RK-005", "F-TANQUE / RK-004", "F-MOTOR / RK-002", "F-CHASSI / RK-001"];
+          rows.forEach((r, i) => {
+            const rr = restricoes[i % restricoes.length];
+            const row = ws.addRow([r.periodo, r.plano, r.atendido, r.gap, r.aderencia / 100, r.aderencia < 100 ? rr : "—"]);
+            row.eachCell((c, col) => {
+              c.border = {
+                top: { style: "thin", color: { argb: "FFE5E7EB" } },
+                left: { style: "thin", color: { argb: "FFE5E7EB" } },
+                bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
+                right: { style: "thin", color: { argb: "FFE5E7EB" } },
+              };
+              c.alignment = { vertical: "middle", horizontal: col === 1 ? "left" : col === 6 ? "left" : "right" };
+              c.font = { name: "Calibri", size: 11, color: { argb: "FF111827" } };
+            });
+
+            // Formatos numéricos
+            row.getCell(2).numFmt = "#,##0";
+            row.getCell(3).numFmt = "#,##0";
+            row.getCell(4).numFmt = "#,##0";
+            row.getCell(5).numFmt = "0%";
+
+            // Cores por aderência
+            const pct = r.aderencia;
+            const cell = row.getCell(5);
+            const fill =
+              pct < 0.7 * 100
+                ? "FFFEE2E2" // vermelho claro
+                : pct < 0.9 * 100
+                  ? "FFFEF3C7" // amarelo claro
+                  : "FFD1FAE5"; // verde claro
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fill } };
+            cell.font = { bold: true };
+          });
+
+          const buf = await wb.xlsx.writeBuffer();
+          const blob = new Blob([buf], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${safeBase}_${stamp}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+
           toast.success("Excel exportado.");
         } else {
+          // PDF "clássico": texto + tabela (mais leve e com texto selecionável).
           const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
           doc.setFontSize(14);
           doc.text(titulo, 40, 40);
@@ -117,7 +266,7 @@ function ReportShell({ titulo, subtitulo, periodo, labels, totals }: Props) {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-8 p-6">
-      <div>
+      <div ref={exportRef}>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
@@ -151,7 +300,7 @@ function ReportShell({ titulo, subtitulo, periodo, labels, totals }: Props) {
               })}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end" data-export-hide>
           <Button
             variant="outline"
             size="sm"
@@ -180,7 +329,7 @@ function ReportShell({ titulo, subtitulo, periodo, labels, totals }: Props) {
             <h3 className="font-display text-lg font-semibold text-foreground">Aderência projetada — {periodo}</h3>
             <BarChart3 className="h-5 w-5 shrink-0 text-primary/70" aria-hidden />
           </div>
-          <div className="rounded-xl bg-muted/30 p-4">
+          <div ref={chartRef} className="rounded-xl bg-muted/30 p-4">
           <div className="flex h-64 items-end gap-1 sm:gap-3 border-b border-border/50 pb-2 pl-2 overflow-x-auto">
             {totals.map((t, i) => {
               const s = semaforo(t.pct);
