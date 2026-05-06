@@ -3,14 +3,14 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import AppLayout from "@/components/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import SimulacaoAnual from "./pages/SimulacaoAnual";
-import SimulacaoMensal from "./pages/SimulacaoMensal";
-import SimulacaoDiaria from "./pages/SimulacaoDiaria";
-import { RacksPage, BensGiroPage, ModelosPage, FamiliasPage, LeadTimePage } from "./pages/Cadastros";
-import { RelatorioAnual, RelatorioMensal, RelatorioDiario } from "./pages/Relatorios";
+import SimulacaoAnual from "./pages/Simulation/Annual";
+import SimulacaoMensal from "./pages/Simulation/Monthly";
+import SimulacaoDiaria from "./pages/Simulation/Daily";
+import { RacksPage, BensGiroPage, ModelosPage, FamiliasPage, LeadTimePage } from "./pages/Registrations";
+import { RelatorioAnual, RelatorioMensal, RelatorioDiario } from "./pages/Reports";
 
 const queryClient = new QueryClient();
 
