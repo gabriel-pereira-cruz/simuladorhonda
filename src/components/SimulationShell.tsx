@@ -23,7 +23,9 @@ import {
   duplicateSimulacao,
   formatDataBr,
   getMergedSimulacoes,
+  getPlannedScenario,
   pathForSimulacaoTipo,
+  planScenarioBase,
   subscribeSimulacoesChanged,
 } from "@/lib/simulationHistory";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -58,11 +60,13 @@ export function SimulationShell({
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [nome, setNome] = useState(defaultName || `Nova Simulação ${tipo}`);
-  const [status] = useState<Simulacao["status"]>("Rascunho");
   const [statusFiltro, setStatusFiltro] = useState<string>("all");
   const [pending, setPending] = useState<null | "save" | "dup" | "plan">(null);
   const [mergedSims, setMergedSims] = useState(() => getMergedSimulacoes());
   const [apagarCenario, setApagarCenario] = useState<Simulacao | null>(null);
+  const [confirmPlanOpen, setConfirmPlanOpen] = useState(false);
+  const [nextStepOpen, setNextStepOpen] = useState(false);
+  const [planResult, setPlanResult] = useState<null | { replaced?: Simulacao | null }>(null);
   const appliedNomeFromUrl = useRef(false);
 
   useEffect(() => subscribeSimulacoesChanged(() => setMergedSims(getMergedSimulacoes())), []);
@@ -91,7 +95,21 @@ export function SimulationShell({
     return base.filter((s) => s.status === st);
   }, [tipo, statusFiltro, mergedSims]);
 
+  const nomeTrim = nome.trim();
+  const currentFromHistory = useMemo(
+    () => mergedSims.find((s) => s.tipo === tipo && s.nome === nomeTrim) ?? null,
+    [mergedSims, tipo, nomeTrim],
+  );
+
+  const plannedForTipo = useMemo(() => getPlannedScenario(tipo), [tipo, mergedSims]);
+  const hasOtherPlanned =
+    plannedForTipo && (!currentFromHistory || plannedForTipo.id !== currentFromHistory.id);
+  const isAlreadyPlanned =
+    (currentFromHistory && currentFromHistory.status === "Planejada") ||
+    (plannedForTipo && currentFromHistory && plannedForTipo.id === currentFromHistory.id);
+
   const etapaFluxo = tipo === "Anual" ? 1 : tipo === "Mensal" ? 2 : 3;
+  const status: Simulacao["status"] = isAlreadyPlanned ? "Planejada" : "Rascunho";
 
   return (
     <div className="flex h-full">
@@ -156,10 +174,10 @@ export function SimulationShell({
               <Button
                 variant="outline"
                 size="sm"
-                disabled={pending !== null}
+                disabled={pending !== null || isAlreadyPlanned}
+                title="Define este cenário como base para a próxima etapa do planejamento"
                 onClick={() => {
-                  setPending("plan");
-                  runMockAction("Cenário enviado para planejamento.", () => setPending(null));
+                  setConfirmPlanOpen(true);
                 }}
               >
                 <Play className="h-4 w-4 mr-2" />
@@ -216,7 +234,12 @@ export function SimulationShell({
         </div>
         <div className="flex-1 overflow-auto p-3 space-y-2">
           {lista.map((s) => (
-            <Card key={s.id} className="p-3 hover:border-primary/50 transition-colors">
+            <Card
+              key={s.id}
+              className={`p-3 transition-colors hover:border-primary/50 ${
+                s.nome === nomeTrim ? "border-primary/45 ring-2 ring-primary/15" : ""
+              }`}
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{s.nome}</div>
@@ -304,6 +327,105 @@ export function SimulationShell({
               }}
             >
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* MODAL 1 — Confirmação de Planejamento */}
+      <AlertDialog open={confirmPlanOpen} onOpenChange={setConfirmPlanOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {tipo === "Diária" ? "Finalizar planejamento operacional?" : "Definir este cenário como base de planejamento?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {tipo === "Diária" ? (
+                <span className="block">
+                  Este cenário será considerado como referência para análise do plano e riscos de execução.
+                </span>
+              ) : (
+                <>
+                  <span className="block">
+                    Este cenário será utilizado como base para o próximo nível de simulação.
+                    <br />
+                    A simulação atual planejada será substituída.
+                  </span>
+                  <span className="mt-3 block text-sm">
+                    • Os dados deste cenário serão congelados como hipótese base
+                    <br />• Isso permitirá avançar para o detalhamento (mensal ou diário)
+                  </span>
+                </>
+              )}
+
+              {hasOtherPlanned ? (
+                <span className="mt-4 block font-medium text-foreground">
+                  ⚠️ Ao planejar este cenário, o cenário planejado atual será substituído.
+                </span>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending !== null}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={pending !== null}
+              onClick={() => {
+                setPending("plan");
+                const res = planScenarioBase({
+                  tipo,
+                  nome: nomeTrim || `Simulação ${tipo}`,
+                  atendimento: atendimentoPreview,
+                  criador: "Você",
+                });
+                setPlanResult({ replaced: res.replacedPlanned });
+                setPending(null);
+                setConfirmPlanOpen(false);
+
+                if (tipo === "Diária") {
+                  toast.success("✅ Cenário diário definido como referência");
+                  return;
+                }
+
+                toast.success("✅ Cenário definido como base de planejamento");
+                setNextStepOpen(true);
+              }}
+            >
+              {tipo === "Diária" ? "Confirmar Planejamento" : "Confirmar e Planejar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* MODAL 2 — Próximo passo */}
+      <AlertDialog open={nextStepOpen} onOpenChange={setNextStepOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Próximo passo do planejamento</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="block">Agora você pode detalhar este cenário no próximo nível de simulação.</span>
+              <span className="mt-3 block font-medium text-foreground">
+                {tipo === "Anual"
+                  ? "Deseja detalhar a distribuição ao longo dos meses?"
+                  : "Deseja analisar o risco no nível diário?"}
+              </span>
+              {planResult?.replaced ? (
+                <span className="mt-3 block text-sm text-muted-foreground">
+                  Base anterior substituída: <span className="font-medium text-foreground">{planResult.replaced.nome}</span>
+                </span>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continuar aqui</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const nextTipo = tipo === "Anual" ? ("Mensal" as const) : ("Diária" as const);
+                const path = pathForSimulacaoTipo(nextTipo);
+                navigate(`${path}?nome=${encodeURIComponent(nomeTrim || `Simulação ${nextTipo}`)}`);
+                setNextStepOpen(false);
+              }}
+            >
+              {tipo === "Anual" ? "Ir para Simulação Mensal" : "Ir para Simulação Diária"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

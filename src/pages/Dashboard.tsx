@@ -130,38 +130,55 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-10 p-6 pb-12">
-      <div className="mb-2 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Simulador PCP · Painel de Cenários</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Simulador de Disponibilidade de Racks e Bens de Giro
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Projeção de aderência ao plano de produção — Ano Ki {data.anoKiLabel}. Valores são{" "}
-            <span className="font-semibold text-foreground">simulações</span>, não operação em tempo real.
-          </p>
+      <div className="mb-2 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+        <div className="px-6 py-5 sm:px-7 sm:py-6">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                  Simulador PCP · Painel de Cenários
+                </p>
+                <span className="hidden h-1 w-1 rounded-full bg-border sm:inline-block" aria-hidden />
+                <p className="hidden text-[11px] font-medium text-muted-foreground sm:block">
+                  Ano Ki {data.anoKiLabel}
+                </p>
+              </div>
+
+              <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                Simulador de Disponibilidade de Racks e Bens de Giro
+              </h1>
+
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                Projeção de aderência ao plano de produção. Valores são{" "}
+                <span className="font-semibold text-foreground">simulações</span>, não operação em tempo real.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/simulacao/anual">
+                  <CalendarRange className="h-4 w-4 mr-2" />
+                  Cenário anual
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90"
+                type="button"
+                onClick={() => {
+                  setNovoNome("");
+                  setNovoTipo("Anual");
+                  setNovoOpen(true);
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Novo cenário
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/simulacao/anual">
-              <CalendarRange className="h-4 w-4 mr-2" />
-              Cenário anual
-            </Link>
-          </Button>
-          <Button
-            size="sm"
-            className="bg-primary hover:bg-primary/90"
-            type="button"
-            onClick={() => {
-              setNovoNome("");
-              setNovoTipo("Anual");
-              setNovoOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Novo cenário
-          </Button>
-        </div>
+
+        <div className="h-1.5 bg-gradient-to-r from-primary via-primary/70 to-transparent" aria-hidden />
       </div>
 
       <ScenarioSummary
